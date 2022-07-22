@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Ping</title>
+	<style>
+        body {
+            background:black; /*#292929 black shade, magenta White Color*/
+        }
+	</style>
+</head>
+<body>
+	<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+	<script>
+		var canvas = document.getElementById('gameCanvas');;
+		var canvasContext;
+		var ballX = 50;
+		var ballY = 50;
+		var c = 1000 / 30;	/*clock,velocity=1s/framesPerSecond*/
+		var ballSpeedX = 10
+		var ballSpeedY = 10
+		var paddle1Y = 250;
+		var paddle2Y = 250;
+		const PADDLE_HEIGHT = 100;
+		const PADDLE_THICKNESS = 10;
+		var p1Score = 0;
+		var p2Score = 0;
+		var showingWinScreen = false;
+		const WINNING_SCORE = 3;
+		var rFlat = canvas.width - PADDLE_THICKNESS;
+		var h = PADDLE_HEIGHT / 2;
+		var cH = canvas.height;
+		var d = cH - PADDLE_HEIGHT;
+
+		function calculateMousePos(evt) {
+			var rect = canvas.getBoundingClientRect();
+			var root = document.documentElement;
+			var mouseX = evt.clientX - rect.left - root.scrollLeft
+			var mouseY = evt.clientY - rect.top - root.scrollTop;
+			return { x: mouseX, y: mouseY };
+		}
+
+		function handleMouseClick(evt) {
+			if (showingWinScreen) {
+				p1Score = 0;
+				p2Score = 0;
+				showingWinScreen = false;
+			}
+		}
+
+		window.onload = function () {
+			console.log("Hello World!");
+			canvas = document.getElementById('gameCanvas');
+			canvasContext = canvas.getContext('2d');
+			setInterval(function () {
+				moveEverything();
+				drawEverything();
+			}, c);
+
+			canvas.addEventListener('mousedown', handleMouseClick);
+
+			canvas.addEventListener('mousemove', function (evt) {
+				var mousePos = calculateMousePos(evt);
+				paddle1Y = mousePos.y - (PADDLE_HEIGHT / 2);
+				// top of the paddle is higher than mouse(p)
+				if (paddle1Y < 0) {
+					paddle1Y = 0;
+				}
+				else if (paddle1Y > d) { // 400)//
+					paddle1Y = d; // console.log(paddle1Y);
+
+				}
+			});
+		}
+
+
+		function ballReset() {
+			if (p1Score >= WINNING_SCORE || p2Score >= WINNING_SCORE) {
+				showingWinScreen = true;
+			}
+			ballSpeedX = -ballSpeedX;
+			ballX = canvas.width / 2;
+			ballY = canvas.height / 2;
+		}
+
+		function colorCircle(centerX, centerY, radius, drawColor) {
+			canvasContext.fillStyle = drawColor;
+			canvasContext.beginPath();
+			canvasContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
+			canvasContext.fill();
+		}
+
+		function computerMovement() {	//	AI
+			var paddle2YCenter = paddle2Y + (PADDLE_HEIGHT / 2);
+			if (paddle2YCenter < ballY - 35) {
+				paddle2Y = paddle2Y + 6;
+			} else if (paddle2YCenter > ballY + 35) {
+				paddle2Y = paddle2Y - 6;
+			}
+		}
+
+		function moveEverything() {
+			if (showingWinScreen) {
+				return;
+			}
+
+			computerMovement();
+
+			ballX = ballX + ballSpeedX;	// console.log(ballX);
+			ballY += ballSpeedY;
+
+			if (ballY > paddle1Y &&
+				ballY < paddle1Y + PADDLE_HEIGHT && ballX <= PADDLE_THICKNESS) {
+				ballSpeedX = -ballSpeedX;
+
+				var deltaY = ballY - (paddle1Y + PADDLE_HEIGHT / 2);
+				ballSpeedY = deltaY * 0.35;
+			}
+			if (ballX < 0) {
+				p2Score++; // must be BEFORE ballReset()
+				ballReset();
+			}
+
+			if (ballY > paddle2Y &&
+				ballY < paddle2Y + PADDLE_HEIGHT && ballX >= rFlat) {
+				ballSpeedX = -ballSpeedX;
+
+				var deltaY = ballY
+					- (paddle2Y + PADDLE_HEIGHT / 2);
+				ballSpeedY = deltaY * 0.35;
+			}
+			if (ballX > canvas.width) {
+				p1Score++; // must be BEFORE ballReset()
+				ballReset();
+			}
+
+			if (ballY >= canvas.height || ballY <= 0)
+				ballSpeedY = - ballSpeedY;
+		}
+
+		function drawEverything() {
+			// blanks out the screen with black
+			canvasContext.fillStyle = 'black';
+			// canvasContext.fillRect(0, 0, canvas.width, canvas.height);	/*required*/
+			canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+
+			canvasContext.beginPath();
+			canvasContext.lineWidth = "1";
+			canvasContext.strokeStyle = "red";
+			canvasContext.rect(0, 0, canvas.width, canvas.height);
+			canvasContext.stroke();
+
+			// left player paddle
+			canvasContext.fillStyle = "white";
+			canvasContext.fillRect(0, paddle1Y, PADDLE_THICKNESS, PADDLE_HEIGHT);
+
+			// right computer paddle
+			canvasContext.fillStyle = "green";
+			canvasContext.fillRect(canvas.width - PADDLE_THICKNESS, paddle2Y,
+				PADDLE_THICKNESS, PADDLE_HEIGHT);
+
+			// draws the ball
+			colorCircle(ballX, ballY, 10, "red");
+
+			//	canvasContext.fillStyle = 'red';
+			//	canvasContext.fillRect(ballX, 200,25,25);
+			if (showingWinScreen) {
+				canvasContext.fillStyle = 'white';
+
+				if (p1Score >= WINNING_SCORE) {
+					canvasContext.fillText("White Player Won", 350, 200);
+				} else if (p2Score >= WINNING_SCORE) {
+					canvasContext.fillText("Green Player Won", 350, 200);
+				}
+
+				canvasContext.fillText("click to continue", 350, 500);
+				return;
+			}
+
+			canvasContext.fillStyle = "white";
+			canvasContext.fillText(p1Score, 100, 100);
+			canvasContext.fillText(p2Score, canvas.width - 100, 100);
+		}
+	</script>
+</body>
+</html>
