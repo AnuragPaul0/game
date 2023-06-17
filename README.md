@@ -1,6 +1,6 @@
 # Simple ping pong game.
 
-[ping pong.html](anuragpaul0.github.io/game/ping pong.html)
+[ping pong.html](anuragpaul0.github.io/game/ping%20pong.html)
 
 ## License
 
