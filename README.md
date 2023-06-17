@@ -1,7 +1,7 @@
 # Simple ping pong game.
 
-[ping pong.html](anuragpaul0.github.io/game/ping%20pong.html)
-
+[ping pong.html](https://anuragpaul0.github.io/game/ping%20pong.html)
+anuragpaul0.github.io/game/ping%20pong.html
 ## License
 
 MIT License
